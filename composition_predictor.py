@@ -210,8 +210,8 @@ def run_inverse_model(prop, value, n):
 
     results = pd.concat((exact_matches, promising_results), axis=0)
     results = results.loc[:, (results != 0).any(axis=0)]
+    results.drop_duplicates(inplace=True)
     results = results.sort_values(by='Confidence %', ascending=False)
     results.reset_index(inplace=True, drop=True)
-    results.drop_duplicates(inplace=True)
 
     return results.round(3).head(n)
