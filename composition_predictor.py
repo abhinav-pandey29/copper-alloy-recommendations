@@ -18,8 +18,8 @@ def extract_unique_values(data):
 def load_data_for_prop(prop):
 
     prop_paths = {
-        'tensile_strength': "data/Tensile Strength Data.csv",
-        'thermal_conductivity': "data/Thermal Conductivity Data.csv",
+        'tensile_strength': "./data/Tensile Strength Data.csv",
+        'thermal_conductivity': "./data/Thermal Conductivity Data.csv",
     }
 
     data = pd.read_csv(prop_paths[prop])
