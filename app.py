@@ -1,7 +1,9 @@
 import os
+import click
 
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
+from flask.cli import with_appcontext   
 
 from forms import PredicitionRequestForm
 from composition_predictor import run_inverse_model
@@ -37,4 +39,9 @@ def index():
 
     return render_template('index.html', form=form, results=results)
 
-db.create_all()
+@click.command(name='create_tables')
+@with_appcontext
+def create_tables():
+    db.create_all()
+
+app.cli.add_command(create_tables)
