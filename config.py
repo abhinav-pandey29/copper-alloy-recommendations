@@ -3,7 +3,7 @@ import os
 class Config:
     DEBUG = False
     DEVELOPMENT = False
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///test.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///test.db")
     SECRET_KEY = os.getenv("SECRET_KEY", "this-is-the-default-key")
 
 class ProductionConfig(Config):
