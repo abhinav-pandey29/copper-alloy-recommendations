@@ -1,0 +1,11 @@
+/__pycache__
+/.ipynb_checkpoints
+/.vscode
+/env
+/datasets
+/raw_json_results
+/scraping resources
+
+*.csv
+*.db
+*.ipynb

@@ -1,0 +1,19 @@
+Model Performance Logs:
+
+1. Thermal Conductivity:
+    
+    Last Updated: May 12, 2021 10:51 AM
+    
+    Model Family: Random Forest
+    
+    Saved as: [
+                thermal_rf (updated).joblib,
+                thermal_rf (updated).pickle,
+              ]
+    
+    R2: 
+        Train = 0.9673        Validation = 0.9162         Test = 0.9244
+    MAE: 
+        Train = 5.29802       Validation = 10.787529      Test = 12.767827
+    MSE: 
+        Train = 146.919394    Validation = 270.305818     Test = 383.236183
