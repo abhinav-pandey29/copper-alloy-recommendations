@@ -5,6 +5,7 @@
 /datasets
 /raw_json_results
 /scraping resources
+/model_building_resources
 
 *.csv
 *.db
