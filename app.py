@@ -12,7 +12,6 @@ env_config = os.getenv("APP_SETTINGS", "config.DevelopmentConfig")
 app.config.from_object(env_config)
 
 db = SQLAlchemy(app)
-db.create_all()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -37,3 +36,5 @@ def index():
         return results
 
     return render_template('index.html', form=form, results=results)
+
+db.create_all()
