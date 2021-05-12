@@ -2,6 +2,7 @@
 from warnings import filterwarnings
 import itertools
 import pickle
+import os
 
 import numpy as np
 import pandas as pd
@@ -17,9 +18,10 @@ def extract_unique_values(data):
 
 def load_data_for_prop(prop):
 
+    print("Current Directory = ", os.curdir)
     prop_paths = {
-        'tensile_strength': "./data/Tensile Strength Data.csv",
-        'thermal_conductivity': "./data/Thermal Conductivity Data.csv",
+        'tensile_strength': "data/Tensile Strength Data.csv",
+        'thermal_conductivity': "data/Thermal Conductivity Data.csv",
     }
 
     data = pd.read_csv(prop_paths[prop])
