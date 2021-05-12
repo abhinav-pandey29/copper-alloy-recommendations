@@ -11,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 filterwarnings('ignore')
 pd.options.display.max_columns = 999
 
+ROOTDIR = os.path.abspath(os.curdir)
 
 def extract_unique_values(data):
     return [np.unique(data[col]) for col in data]
@@ -18,10 +19,9 @@ def extract_unique_values(data):
 
 def load_data_for_prop(prop):
 
-    print("Current Directory = ", os.curdir)
     prop_paths = {
-        'tensile_strength': "data/Tensile Strength Data.csv",
-        'thermal_conductivity': "data/Thermal Conductivity Data.csv",
+        'tensile_strength': ROOTDIR + "/data/Tensile Strength Data.csv",
+        'thermal_conductivity': ROOTDIR + "/data/Thermal Conductivity Data.csv",
     }
 
     data = pd.read_csv(prop_paths[prop])
@@ -72,9 +72,9 @@ def rectify_composition(data):
 
 def load_pretrained_model(prop):
     model_info = {
-        'tensile_strength': {'fpath': 'models/rf_tensile_strength.pickle',
+        'tensile_strength': {'fpath': ROOTDIR + '/models/rf_tensile_strength.pickle',
                              'accuracy': 0.924536},
-        'thermal_conductivity': {'fpath': 'models/rf_thermal_conductivity.pickle',
+        'thermal_conductivity': {'fpath': ROOTDIR + '/models/rf_thermal_conductivity.pickle',
                                  'accuracy': 0.828387},
     }
 
