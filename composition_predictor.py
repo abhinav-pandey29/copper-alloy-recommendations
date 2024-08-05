@@ -14,9 +14,6 @@ pd.options.display.max_columns = 999
 
 ROOTDIR = os.path.abspath(os.curdir)
 
-def extract_unique_values(data):
-    return [np.unique(data[col]) for col in data]
-
 
 def load_data_for_prop(prop):
 
@@ -27,48 +24,6 @@ def load_data_for_prop(prop):
 
     data = pd.read_csv(prop_paths[prop])
     return data
-
-
-def extract_closest_matches(prop, value, n):
-    '''
-    Funcion to get n alloys with the closest values of the
-    desired property (thermal conductivity or tensile strength)
-    '''
-
-    data = load_data_for_prop(prop)
-
-    abs_diff = abs(data[prop] - value)
-    top_matches_idx = np.argsort(abs_diff)[:n]
-
-    top_matches = data.iloc[top_matches_idx]
-    top_matches.drop(prop, axis=1, inplace=True)
-
-    return top_matches
-
-
-def limit_synthetic_data_size(data, prop, value, size_limit=300000):
-
-    for n in range(len(data), 1, -1):
-        synthetic_data_content = extract_unique_values(
-            extract_closest_matches(prop, value, n)
-        )
-
-        estimated_size_of_dataset = np.prod(
-            [len(ele) for ele in synthetic_data_content])
-
-        if estimated_size_of_dataset <= size_limit:
-            size_reduced_matches = extract_closest_matches(prop, value, n)
-            break
-
-    return size_reduced_matches
-
-
-def extract_permutations(list_of_lists):
-    return list(itertools.product(*list_of_lists))
-
-
-def rectify_composition(data):
-    return data.apply(lambda x: 100 * x / data.sum(axis=1))
 
 
 class ThermalConductivityPredictor:
@@ -129,21 +84,33 @@ def calculate_prediction_confidence(unlabelled_data, desired_value, prop):
     return prediction_confidence
 
 
-def generate_synthetic_data(desired_value, prop):
+def generate_synthetic_data(target_property, target_value, size_limit=30000):
+    dataset = load_data_for_prop(target_property)
 
-    top_matches = extract_closest_matches(prop, desired_value, n=10)
-    top_matches = limit_synthetic_data_size(
-        top_matches, prop, desired_value, size_limit=300000)
-    columns = top_matches.columns
+    # Select the top 10 closest matching alloys
+    sorted_alloys = dataset.sort_values(
+        by=target_property,
+        key=lambda x: abs(target_value - x),
+        ascending=True,
+    )
+    similar_alloys = sorted_alloys.head(10).drop(target_property, axis=1)
 
-    components_of_top_matches = extract_unique_values(top_matches)
-    component_permutations = extract_permutations(components_of_top_matches)
+    # Generate unique element percentages and all possible combinations,
+    # enforcing size limit to prevent combinatorial explosion
+    unique_element_percentages = df.apply(np.unique)
+    all_combinations = itertools.product(*unique_element_percentages.values)
+    subset_combinations = list(itertools.islice(all_combinations, size_limit))
 
-    generated_dataset = pd.DataFrame(component_permutations, columns=columns)
-    generated_dataset.loc[:, 'Cu':] = rectify_composition(
-        generated_dataset.loc[:, 'Cu':])
+    synthetic_alloys = pd.DataFrame(subset_combinations, columns=similar_alloys.columns)
 
-    return generated_dataset
+    # Normalize the element percentages to ensure each row sums to 100%
+    numeric_columns = synthetic_alloys.select_dtypes(include=[np.number]).columns
+    numeric_columns_sum = synthetic_alloys[numeric_columns].sum(axis=1)
+    synthetic_alloys[numeric_columns] = (
+        synthetic_alloys[numeric_columns].div(numeric_columns_sum, axis=0).multiply(100)
+    )
+
+    return synthetic_alloys
 
 
 def fetch_exact_matches(prop, value):
