@@ -6,6 +6,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import joblib
 from sklearn.preprocessing import LabelEncoder
 
 filterwarnings('ignore')
@@ -70,19 +71,47 @@ def rectify_composition(data):
     return data.apply(lambda x: 100 * x / data.sum(axis=1))
 
 
+class ThermalConductivityPredictor:
+    def __init__(self, model_path: str, scaler_path: str):
+        # Load the scaler and model
+        self.scaler = joblib.load(scaler_path)
+        self.model = joblib.load(model_path)
+
+    def preprocess(self, data: pd.DataFrame) -> np.ndarray:
+        # Preprocess the new data using the loaded scaler
+        data_scaled = self.scaler.transform(data)
+        return data_scaled
+
+    def predict(self, data: pd.DataFrame) -> np.ndarray:
+        # Preprocess the data
+        data_scaled = self.preprocess(data)
+        # Make predictions
+        predictions = self.model.predict(data_scaled)
+        return predictions
+
 def load_pretrained_model(prop):
     model_info = {
         'tensile_strength': {'fpath': ROOTDIR + '/models/rf_tensile_strength.pickle',
                              'accuracy': 0.924536},
-        'thermal_conductivity': {'fpath': ROOTDIR + '/models/rf_thermal_conductivity.pickle',
-                                 'accuracy': 0.828387},
+        "thermal_conductivity": {
+            "fpath": ROOTDIR + "/trained_models/gbr_model_thermal_conductivity.pkl",
+            "accuracy": 0.723626,
+        },
     }
 
-    model_filepath = model_info[prop]['fpath']
-    model_accuracy = model_info[prop]['accuracy']
+    model_filepath = model_info[prop]["fpath"]
+    model_accuracy = model_info[prop]["accuracy"]
 
-    with open(model_filepath, 'rb') as f:
-        model = pickle.load(f)
+    if prop == "tensile_strength":
+        with open(model_filepath, "rb") as f:
+            print(model_filepath)
+            model = pickle.load(f)
+    elif prop == "thermal_conductivity":
+        model = ThermalConductivityPredictor(
+            model_path=model_filepath,
+            scaler_path=ROOTDIR + "/trained_models/scaler_thermal_conductivity.pkl",
+        )
+        model_accuracy = model_info[prop]["accuracy"]
 
     return model, model_accuracy
 
