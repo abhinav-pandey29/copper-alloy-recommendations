@@ -71,19 +71,6 @@ def load_pretrained_model(prop):
     return model, model_accuracy
 
 
-def calculate_prediction_confidence(unlabelled_data, desired_value, prop):
-
-    model, model_accuracy = load_pretrained_model(prop)
-    predictions = model.predict(unlabelled_data)
-
-    percentage_error = abs(predictions - desired_value) / desired_value * 100
-    percentage_confidence = 100 - percentage_error
-
-    prediction_confidence = percentage_confidence * model_accuracy
-
-    return prediction_confidence
-
-
 def generate_synthetic_data(target_property, target_value, size_limit=30000):
     dataset = load_data_for_prop(target_property)
 
@@ -113,101 +100,28 @@ def generate_synthetic_data(target_property, target_value, size_limit=30000):
     return synthetic_alloys
 
 
-def fetch_exact_matches(prop, value):
-    data = load_data_for_prop(prop)
-
-    exact_matches = data[data[prop] == value]
-    num_exact_matches = len(exact_matches)
-
-    if num_exact_matches:
-
-        exact_matches.drop(prop, axis=1, inplace=True)
-        exact_matches.drop_duplicates(inplace=True)
-        exact_matches.insert(
-            loc=0,
-            column="Confidence %",
-            value=[100]*len(exact_matches)
-        )
-
-        return exact_matches
-
-
-def load_data_encoders(prop):
-
-    if prop == 'tensile_strength':
-        data = load_data_for_prop(prop)
-        form_enc = LabelEncoder().fit(data['Form'])
-        temper_enc = LabelEncoder().fit(data['Temper'])
-
-        encoders = {
-            'tensile_strength': {
-                'Form': form_enc,
-                'Temper': temper_enc
-            },
-            'thermal_conductivity': {}
-        }
-
-        return encoders
-
-
-def decode_temper_form(data, prop):
-
-    encoders = load_data_encoders(prop)
-    if encoders:
-        if prop == 'tensile_strength':
-            data.loc[:, 'Form'] = encoders[prop]['Form'].inverse_transform(
-                data['Form']
-            )
-            data.loc[:, 'Temper'] = encoders[prop]['Temper'].inverse_transform(
-                data['Temper']
-            )
-    return data
-
-
-def prop_mapper(property_name):
-
-    prop_mapping = {'Tensile Strength': 'tensile_strength',
-                    'Thermal Conductivity': 'thermal_conductivity'}
-    if property_name in prop_mapping.keys():
-        prop = prop_mapping[property_name]
-
-    return prop
+def calculate_confidence(predictions, desired_value, model_accuracy):
+    percentage_error = abs(predictions - desired_value) / desired_value * 100
+    confidence = (100 - percentage_error) * model_accuracy
+    return confidence
 
 
 def run_inverse_model(prop, value, n):
+    data = load_data_for_prop(prop)
+    exact_matches = data[data[prop] == value].drop(prop, axis=1).drop_duplicates()
+    exact_matches.insert(0, "Confidence %", 100)
 
-    prop = prop_mapper(prop)
-
-    exact_matches = fetch_exact_matches(prop, value)
-
-    model, model_accuracy = load_pretrained_model(prop)
-    encoders = load_data_encoders(prop)
-
-    synthetic_data = generate_synthetic_data(value, prop)
-
-    if encoders:
-        synthetic_data['Form'] = encoders[prop]['Form'].transform(
-            synthetic_data['Form']
-        )
-        synthetic_data['Temper'] = encoders[prop]['Temper'].transform(
-            synthetic_data['Temper']
-        )
-
+    model, accuracy = load_pretrained_model(prop)
+    synthetic_data = generate_synthetic_data(prop, value)
     predictions = model.predict(synthetic_data)
 
-    promising_results = synthetic_data.iloc[np.argsort(
-        abs(predictions - value)), :]
-    percentage_confidence = calculate_prediction_confidence(
-        promising_results, value, prop)
+    synthetic_data["Confidence %"] = calculate_confidence(predictions, value, accuracy)
 
-    promising_results.insert(loc=0, column="Confidence %",
-                             value=percentage_confidence.round(1), allow_duplicates=False)
-    promising_results = decode_temper_form(promising_results, prop)
-
-    results = pd.concat((exact_matches, promising_results), axis=0)
-    results = results.loc[:, (results != 0).any(axis=0)]
-    results.drop_duplicates(inplace=True)
-    results = results.sort_values(by='Confidence %', ascending=False)
-    results.reset_index(inplace=True, drop=True)
-
-    return results.round(3).head(n)
+    alloy_compositions = (
+        pd.concat([exact_matches, synthetic_data])
+        .drop_duplicates()
+        .sort_values(by="Confidence %", ascending=False)
+        .reset_index(drop=True)
+        .head(n)
+    )
+    return alloy_compositions
