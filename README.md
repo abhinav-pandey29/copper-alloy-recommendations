@@ -1,6 +1,6 @@
 # Copper Alloy Recommendations
 
-Welcome to the **Copper Alloy Recommendations** project, an ML-powered Streamlit app for recommending copper alloy compositions based on thermal conductivity. The app includes existing alloys from [Copper.org](https://alloys.copper.org/) and generates novel compositions using an inverse modeling approach from my thesis at the Australian National University in 2020. The full project report is available [here](https://github.com/abhinav-pandey29/Projects/blob/main/Copper%20Alloy%20Discovery%20using%20AI/project/Project%20Report.pdf).
+Welcome to the **Copper Alloy Recommendations** project, an ML-powered Streamlit app for recommending copper alloy compositions based on thermal conductivity. The app includes existing alloys from [Copper.org](https://alloys.copper.org/) and generates novel compositions using an inverse modeling approach from my thesis at the Australian National University in 2020. The full project report is available [here](docs/Project%20Report.pdf).
 
 
 ## Setup
