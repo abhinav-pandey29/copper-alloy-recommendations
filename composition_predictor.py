@@ -84,7 +84,7 @@ def generate_synthetic_data(target_property, target_value, size_limit=30000):
 
     # Generate unique element percentages and all possible combinations,
     # enforcing size limit to prevent combinatorial explosion
-    unique_element_percentages = df.apply(np.unique)
+    unique_element_percentages = similar_alloys.apply(np.unique)
     all_combinations = itertools.product(*unique_element_percentages.values)
     subset_combinations = list(itertools.islice(all_combinations, size_limit))
 
