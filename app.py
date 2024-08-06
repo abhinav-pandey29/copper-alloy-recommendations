@@ -63,12 +63,15 @@ if st.sidebar.button("Get Recommendations"):
             st.write(
                 f"### Recommended Copper Alloy Compositions for Thermal Conductivity of {thermal_conductivity} (BTU·h⁻¹·ft⁻¹·℉⁻¹)"
             )
+            # TODO: Simplify result formatting steps
             st.table(
                 pred_df.round(3)
                 .replace(0, None)
                 .drop_duplicates()
                 .reset_index(drop=True)
                 .head(10)
+                .astype(str)
+                .replace("None", None)
                 .style.highlight_null(props="color: transparent;")
             )
         except Exception as e:
