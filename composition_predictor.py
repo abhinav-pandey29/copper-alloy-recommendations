@@ -1,27 +1,19 @@
-# Import libraries
-from warnings import filterwarnings
 import itertools
-import pickle
 import os
+import pickle
 
+import joblib
 import numpy as np
 import pandas as pd
-import joblib
-from sklearn.preprocessing import LabelEncoder
-
-filterwarnings('ignore')
-pd.options.display.max_columns = 999
 
 ROOTDIR = os.path.abspath(os.curdir)
 
 
 def load_data_for_prop(prop):
-
     prop_paths = {
-        'tensile_strength': ROOTDIR + "/data/Tensile Strength Data.csv",
-        'thermal_conductivity': ROOTDIR + "/data/Thermal Conductivity Data.csv",
+        "tensile_strength": ROOTDIR + "/data/Tensile Strength Data.csv",
+        "thermal_conductivity": ROOTDIR + "/data/Thermal Conductivity Data.csv",
     }
-
     data = pd.read_csv(prop_paths[prop])
     return data
 
@@ -44,10 +36,13 @@ class ThermalConductivityPredictor:
         predictions = self.model.predict(data_scaled)
         return predictions
 
+
 def load_pretrained_model(prop):
     model_info = {
-        'tensile_strength': {'fpath': ROOTDIR + '/models/rf_tensile_strength.pickle',
-                             'accuracy': 0.924536},
+        "tensile_strength": {
+            "fpath": ROOTDIR + "/models/rf_tensile_strength.pickle",
+            "accuracy": 0.924536,
+        },
         "thermal_conductivity": {
             "fpath": ROOTDIR + "/trained_models/gbr_model_thermal_conductivity.pkl",
             "accuracy": 0.723626,
